@@ -106,24 +106,24 @@ class _GameBoardState extends State<GameBoard> {
     );
 
     // place queens
-    newBoard[0][4] = ChessPiece(
+    newBoard[0][3] = ChessPiece(
       type: ChessPieceType.queen,
       isWhite: false,
       imagePath: "lib/images/queen.png",
     );
-    newBoard[7][4] = ChessPiece(
+    newBoard[7][3] = ChessPiece(
       type: ChessPieceType.queen,
       isWhite: true,
       imagePath: "lib/images/queen.png",
     );
 
     // place kings
-    newBoard[0][3] = ChessPiece(
+    newBoard[0][4] = ChessPiece(
       type: ChessPieceType.king,
       isWhite: false,
       imagePath: "lib/images/king.png",
     );
-    newBoard[7][3] = ChessPiece(
+    newBoard[7][4] = ChessPiece(
       type: ChessPieceType.king,
       isWhite: true,
       imagePath: "lib/images/king.png",
@@ -137,6 +137,7 @@ class _GameBoardState extends State<GameBoard> {
     return Scaffold(
       backgroundColor: backgroundColor,
       body: GridView.builder(
+        padding: EdgeInsets.only(top: 180),
         itemCount: 8 * 8,
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate:
