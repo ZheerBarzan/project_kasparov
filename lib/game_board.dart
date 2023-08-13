@@ -20,6 +20,8 @@ class _GameBoardState extends State<GameBoard> {
 
   int selectedColumn = -1;
 
+  List<List<int>> validMoves = [];
+
   @override
   void initState() {
     super.initState();
