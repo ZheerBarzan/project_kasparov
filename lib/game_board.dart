@@ -167,7 +167,7 @@ class _GameBoardState extends State<GameBoard> {
         }
         // pwan can move 2 squres forward at the inital position
         if ((row == 1 && !piece.isWhite) || (row == 6 && piece.isWhite)) {
-          if (isInBoard(row + 2, column) &&
+          if (isInBoard(row + 2 * direction, column) &&
               board[row + 2 * direction][column] == null &&
               board[row + direction][column] == null) {
             candidateMoves.add([row + 2 * direction, column]);
@@ -186,6 +186,32 @@ class _GameBoardState extends State<GameBoard> {
         }
         break;
       case ChessPieceType.rook:
+        // rook can move to the end of the board only horizontlly and vertically
+        var directions = [
+          [-1, 0], //up
+          [1, 0], //down
+          [0, -1], //left
+          [0, 1], //right
+        ];
+        for (var direction in directions) {
+          var i = 1;
+          while (true) {
+            var newRow = row + i + direction[0];
+            var newColumn = column + i + direction[1];
+            if (!isInBoard(newRow, newColumn)) {
+              break;
+            }
+            // if empty move
+            if (board[newRow][newColumn] != null) {
+              // if not empty and not our piece
+              if (board[newRow][newColumn]!.isWhite != piece.isWhite) {
+                candidateMoves.add([newRow, newColumn]); // rook kill
+              }
+              break; // blocked
+            }
+            candidateMoves.add([newRow, newColumn]);
+          }
+        }
         break;
       case ChessPieceType.knight:
         break;
