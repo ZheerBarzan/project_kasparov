@@ -6,13 +6,15 @@ class Squre extends StatelessWidget {
   final bool isWhite;
   final ChessPiece? piece;
   final bool isSelected;
+  final bool isValid;
   final Function()? onTap;
   const Squre(
       {super.key,
       required this.isWhite,
       required this.piece,
       required this.isSelected,
-      required this.onTap});
+      required this.onTap,
+      required this.isValid});
 
   @override
   Widget build(BuildContext context) {
@@ -20,6 +22,8 @@ class Squre extends StatelessWidget {
 
     if (isSelected) {
       squreColor = Colors.green;
+    } else if (isValid) {
+      squreColor = Colors.green.shade200;
     } else {
       squreColor = isWhite ? foregroundColor : backgroundColor;
     }

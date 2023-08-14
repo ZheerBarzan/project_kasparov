@@ -141,13 +141,62 @@ class _GameBoardState extends State<GameBoard> {
   }
 
   void pieceSelected(int row, int column) {
-    setState(() {
-      if (board[row][column] != null) {
-        selectedPiece = board[row][column];
-        selectedRow = row;
-        selectedColumn = column;
-      }
-    });
+    setState(
+      () {
+        if (board[row][column] != null) {
+          selectedPiece = board[row][column];
+          selectedRow = row;
+          selectedColumn = column;
+        }
+        validMoves =
+            calculateValidMoves(selectedRow, selectedColumn, selectedPiece);
+      },
+    );
+  }
+
+  List<List<int>> calculateValidMoves(int row, int column, ChessPiece? piece) {
+    List<List<int>> candidateMoves = [];
+    int direction = piece!.isWhite ? -1 : 1;
+
+    switch (piece.type) {
+      case ChessPieceType.pwan:
+        // pwan can move 1 squre forward at a time
+        if (isInBoard(row + direction, column) &&
+            board[row + direction][column] == null) {
+          candidateMoves.add([row + direction, column]);
+        }
+        // pwan can move 2 squres forward at the inital position
+        if ((row == 1 && !piece.isWhite) || (row == 6 && piece.isWhite)) {
+          if (isInBoard(row + 2, column) &&
+              board[row + 2 * direction][column] == null &&
+              board[row + direction][column] == null) {
+            candidateMoves.add([row + 2 * direction, column]);
+          }
+        }
+        // pwan can kill diagonally
+        if (isInBoard(row + direction, column - 1) &&
+            board[row + direction][column - 1] != null &&
+            board[row + direction][column - 1]!.isWhite) {
+          candidateMoves.add([row + direction, column - 1]);
+        }
+        if (isInBoard(row + direction, column + 1) &&
+            board[row + direction][column + 1] != null &&
+            board[row + direction][column + 1]!.isWhite) {
+          candidateMoves.add([row + direction, column + 1]);
+        }
+        break;
+      case ChessPieceType.rook:
+        break;
+      case ChessPieceType.knight:
+        break;
+      case ChessPieceType.bishop:
+        break;
+      case ChessPieceType.queen:
+        break;
+      case ChessPieceType.king:
+        break;
+    }
+    return candidateMoves;
   }
 
   @override
@@ -155,7 +204,7 @@ class _GameBoardState extends State<GameBoard> {
     return Scaffold(
       backgroundColor: backgroundColor,
       body: GridView.builder(
-        padding: EdgeInsets.only(top: 180),
+        padding: const EdgeInsets.only(top: 180),
         itemCount: 8 * 8,
         physics: const NeverScrollableScrollPhysics(),
         gridDelegate:
@@ -164,11 +213,21 @@ class _GameBoardState extends State<GameBoard> {
           final int row = ((index / 8).floor());
           final int column = (((index % 8)).ceil());
           bool isSelected = selectedRow == row && selectedColumn == column;
+
+          // check is a valid move
+          bool isValidMove = false;
+          for (var position in validMoves) {
+            // comapre rows and columns
+            if (position[0] == row && position[1] == column) {
+              isValidMove = true;
+            }
+          }
           return Squre(
             isWhite: isWhite(index),
             piece: board[row][column],
             isSelected: isSelected,
             onTap: () => pieceSelected(row, column),
+            isValid: isValidMove,
           );
         },
       ),
