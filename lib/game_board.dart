@@ -210,10 +210,37 @@ class _GameBoardState extends State<GameBoard> {
               break; // blocked
             }
             candidateMoves.add([newRow, newColumn]);
+            i++;
           }
         }
         break;
       case ChessPieceType.knight:
+        // all possible moves for the knight which moves in the shape of letter "L"
+        var knightMoves = [
+          [-2, -1], // up 2 left 1
+          [-2, 1], // up 2 right 1
+          [-1, -2], // up 1 left 2
+          [-1, 2], // up 1 right 2
+          [1, -2], // down 1 left 2
+          [1, 2], // down 1 right 2
+          [2, -1], // down 2 left 1
+          [2, 1], // down 2 right 1
+        ];
+        for (var moves in knightMoves) {
+          var newRow = row + moves[0];
+          var newColumn = column + moves[1];
+          if (!isInBoard(newRow, newColumn)) {
+            continue;
+          }
+          if (board[newRow][newColumn] != null) {
+            // if there is a piece and it not out piece
+            if (board[newRow][newColumn]!.isWhite != piece.isWhite) {
+              candidateMoves.add([newRow, newColumn]); // kill
+            }
+            continue;
+          }
+          candidateMoves.add([newRow, newColumn]);
+        }
         break;
       case ChessPieceType.bishop:
         break;
