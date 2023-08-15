@@ -275,6 +275,39 @@ class _GameBoardState extends State<GameBoard> {
 
         break;
       case ChessPieceType.queen:
+        // rook can move to the end of the board all directions
+        var directions = [
+          [-1, 0], //up
+          [1, 0], //down
+          [0, -1], //left
+          [0, 1], //right
+          [-1, -1], //up left
+          [-1, 1], // up right
+          [1, -1], // down left
+          [1, 1] // down right
+        ];
+        for (var direction in directions) {
+          var i = 0;
+          while (true) {
+            var newRow = row + i * direction[0];
+            var newColumn = column + i * direction[1];
+            // if its out of the board stop
+            if (!isInBoard(newRow, newColumn)) {
+              break;
+            }
+            // a piece is detected
+            if (board[newRow][newColumn] != null) {
+              // if not the same color
+              if (board[newRow][newColumn]!.isWhite != piece.isWhite) {
+                candidateMoves.add([newRow, newColumn]); // kill
+              }
+              break;
+            }
+            candidateMoves.add([newRow, newColumn]);
+            i++;
+          }
+        }
+
         break;
       case ChessPieceType.king:
         break;
