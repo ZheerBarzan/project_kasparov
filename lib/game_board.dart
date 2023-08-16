@@ -214,8 +214,8 @@ class _GameBoardState extends State<GameBoard> {
         for (var direction in directions) {
           var i = 1;
           while (true) {
-            var newRow = row + i + direction[0];
-            var newColumn = column + i + direction[1];
+            var newRow = row + i * direction[0];
+            var newColumn = column + i * direction[1];
             if (!isInBoard(newRow, newColumn)) {
               break;
             }
@@ -305,7 +305,7 @@ class _GameBoardState extends State<GameBoard> {
           [1, 1] // down right
         ];
         for (var direction in directions) {
-          var i = 0;
+          var i = 1;
           while (true) {
             var newRow = row + i * direction[0];
             var newColumn = column + i * direction[1];
@@ -339,7 +339,7 @@ class _GameBoardState extends State<GameBoard> {
           [1, 1] // down right
         ];
         for (var direction in directions) {
-          var i = 0;
+          var i = 1;
 
           var newRow = row + i * direction[0];
           var newColumn = column + i * direction[1];
