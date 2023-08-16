@@ -143,19 +143,37 @@ class _GameBoardState extends State<GameBoard> {
   void pieceSelected(int row, int column) {
     setState(
       () {
+        // if there is a piece in that postion
         if (board[row][column] != null) {
           selectedPiece = board[row][column];
           selectedRow = row;
           selectedColumn = column;
         }
-        validMoves =
-            calculateValidMoves(selectedRow, selectedColumn, selectedPiece);
+        // if a piece is selectd and the moves is valid user taps on a squre, move there
+        else if (selectedPiece != null &&
+            validMoves
+                .any((element) => element[0] == row && element[1] == column)) {
+          movePiece(row, column);
+        }
+
+        // if the piece is selected calculate the valid moves
+        validMoves = calculateValidMoves(
+          selectedRow,
+          selectedColumn,
+          selectedPiece,
+        );
       },
     );
   }
 
   List<List<int>> calculateValidMoves(int row, int column, ChessPiece? piece) {
     List<List<int>> candidateMoves = [];
+
+    if (piece == null) {
+      return [];
+    }
+
+    // diffrent directions based on thier color
     int direction = piece!.isWhite ? -1 : 1;
 
     switch (piece.type) {
@@ -252,7 +270,7 @@ class _GameBoardState extends State<GameBoard> {
         ];
 
         for (var direction in directions) {
-          var i = 0;
+          var i = 1;
           while (true) {
             var newRow = row + i * direction[0];
             var newColumn = column + i * direction[1];
@@ -343,6 +361,21 @@ class _GameBoardState extends State<GameBoard> {
         break;
     }
     return candidateMoves;
+  }
+
+  // move the pieces
+  void movePiece(int newRow, int newColumn) {
+    //move the piece and clear the old spot
+    board[newRow][newColumn] = selectedPiece;
+    board[selectedRow][selectedColumn] = null;
+
+    // clear the selection
+    setState(() {
+      selectedRow = -1;
+      selectedColumn = -1;
+      selectedPiece = null;
+      validMoves = [];
+    });
   }
 
   @override
