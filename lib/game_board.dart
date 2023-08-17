@@ -35,6 +35,10 @@ class _GameBoardState extends State<GameBoard> {
 // a boolean to determine whos turn it is
   bool isWhiteTurn = true;
 
+// keeping track of the positions of the kings and check weather they are in check or no
+  List<int> whiteKingPosition = [7, 4];
+  List<int> blackKingPosition = [0, 4];
+  bool checkStatus = false;
   @override
   void initState() {
     super.initState();
@@ -396,7 +400,11 @@ class _GameBoardState extends State<GameBoard> {
     //move the piece and clear the old spot
     board[newRow][newColumn] = selectedPiece;
     board[selectedRow][selectedColumn] = null;
-
+    if (isKingInCheck(!isWhiteTurn)) {
+      checkStatus = true;
+    } else {
+      checkStatus = false;
+    }
     // clear the selection
     setState(() {
       selectedRow = -1;
@@ -406,6 +414,30 @@ class _GameBoardState extends State<GameBoard> {
     });
 
     isWhiteTurn = !isWhiteTurn;
+  }
+
+  bool isKingInCheck(bool isKing) {
+    List<int> kingPosition = isKing ? whiteKingPosition : blackKingPosition;
+
+    // check if the enemy piece can attack the king
+
+    for (int row = 0; row < 8; row++) {
+      for (int column = 0; column < 8; column++) {
+        // skip the empty squares and pieces that are similer to the king
+        if (board[row][column] == null ||
+            board[row][column]!.isWhite == isKing) {
+          continue;
+        }
+        List<List<int>> pieceValidMove =
+            calculateValidMoves(row, column, board[row][column]);
+
+        if (pieceValidMove.any((move) =>
+            move[0] == kingPosition[0] && move[1] == kingPosition[1])) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   @override
@@ -427,6 +459,21 @@ class _GameBoardState extends State<GameBoard> {
               ),
             ),
           ),
+          Container(
+            margin: const EdgeInsets.all(15.0),
+            padding: const EdgeInsets.all(8.0),
+            decoration: checkStatus
+                ? BoxDecoration(
+                    border: Border.all(color: Colors.redAccent),
+                    borderRadius: BorderRadius.circular(5),
+                    color: Colors.redAccent,
+                  )
+                : null,
+            child: Text(
+              checkStatus ? "Check!" : "",
+            ),
+          ),
+
           Expanded(
             flex: 3,
             child: GridView.builder(
