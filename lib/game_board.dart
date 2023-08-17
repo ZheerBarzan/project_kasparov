@@ -16,17 +16,24 @@ class GameBoard extends StatefulWidget {
 class _GameBoardState extends State<GameBoard> {
   late List<List<ChessPiece?>> board;
 
+// if no piece is selected this is null
   ChessPiece? selectedPiece;
-
+// the row index of the selectd piece
   int selectedRow = -1;
-
+// the column index of the selectd piece
   int selectedColumn = -1;
 
+// a list of move for the currently selected piece whatever the piece is
+//each move is represented as a list of 2 elements: row and column
   List<List<int>> validMoves = [];
 
+// a list of the white pieces taken by the black player
   List<ChessPiece> whitePiecesTaken = [];
-
+// a list of the white pieces taken by the white player
   List<ChessPiece> blackPiecesTaken = [];
+
+// a boolean to determine whos turn it is
+  bool isWhiteTurn = true;
 
   @override
   void initState() {
@@ -151,9 +158,11 @@ class _GameBoardState extends State<GameBoard> {
       () {
         // if there is a piece in that postion and no piece has been selected
         if (selectedPiece == null && board[row][column] != null) {
-          selectedPiece = board[row][column];
-          selectedRow = row;
-          selectedColumn = column;
+          if (board[row][column]!.isWhite == isWhiteTurn) {
+            selectedPiece = board[row][column];
+            selectedRow = row;
+            selectedColumn = column;
+          }
         } else if (board[row][column] != null &&
             board[row][column]!.isWhite == selectedPiece!.isWhite) {
           selectedPiece = board[row][column];
@@ -395,6 +404,8 @@ class _GameBoardState extends State<GameBoard> {
       selectedPiece = null;
       validMoves = [];
     });
+
+    isWhiteTurn = !isWhiteTurn;
   }
 
   @override
