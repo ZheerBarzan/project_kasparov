@@ -185,7 +185,7 @@ class _GameBoardState extends State<GameBoard> {
     }
 
     // diffrent directions based on thier color
-    int direction = piece!.isWhite ? -1 : 1;
+    int direction = piece.isWhite ? -1 : 1;
 
     switch (piece.type) {
       case ChessPieceType.pwan:
@@ -198,19 +198,19 @@ class _GameBoardState extends State<GameBoard> {
         if ((row == 1 && !piece.isWhite) || (row == 6 && piece.isWhite)) {
           if (isInBoard(row + 2 * direction, column) &&
               board[row + 2 * direction][column] == null &&
-              board[row + direction][column] == null) {
+              board[row + 2 * direction][column] == null) {
             candidateMoves.add([row + 2 * direction, column]);
           }
         }
         // pwan can kill diagonally
         if (isInBoard(row + direction, column - 1) &&
             board[row + direction][column - 1] != null &&
-            board[row + direction][column - 1]!.isWhite) {
+            board[row + direction][column - 1]!.isWhite != piece.isWhite) {
           candidateMoves.add([row + direction, column - 1]);
         }
         if (isInBoard(row + direction, column + 1) &&
             board[row + direction][column + 1] != null &&
-            board[row + direction][column + 1]!.isWhite) {
+            board[row + direction][column + 1]!.isWhite != piece.isWhite) {
           candidateMoves.add([row + direction, column + 1]);
         }
         break;
