@@ -14,6 +14,8 @@ class GameBoard extends StatefulWidget {
 }
 
 class _GameBoardState extends State<GameBoard> {
+// a 2-dimentional list representing the chess board
+//each postion contains a chess piece
   late List<List<ChessPiece?>> board;
 
 // if no piece is selected this is null
@@ -42,10 +44,10 @@ class _GameBoardState extends State<GameBoard> {
   @override
   void initState() {
     super.initState();
-    _initalizeState();
+    _initializeBoard();
   }
 
-  void _initalizeState() {
+  void _initializeBoard() {
     // initalize the board with nulls meaning no pices in the positions
     List<List<ChessPiece?>> newBoard =
         List.generate(8, (index) => List.generate(8, (index) => null));
@@ -63,7 +65,6 @@ class _GameBoardState extends State<GameBoard> {
         imagePath: "lib/images/pwan.png",
       );
     }
-
     // place rooks
     newBoard[0][0] = ChessPiece(
       type: ChessPieceType.rook,
@@ -195,7 +196,7 @@ class _GameBoardState extends State<GameBoard> {
     }
 
     // diffrent directions based on thier color
-    int direction = piece.isWhite ? -1 : 1;
+    int direction = piece!.isWhite ? -1 : 1;
 
     switch (piece.type) {
       case ChessPieceType.pwan:
@@ -208,7 +209,7 @@ class _GameBoardState extends State<GameBoard> {
         if ((row == 1 && !piece.isWhite) || (row == 6 && piece.isWhite)) {
           if (isInBoard(row + 2 * direction, column) &&
               board[row + 2 * direction][column] == null &&
-              board[row + 2 * direction][column] == null) {
+              board[row + direction][column] == null) {
             candidateMoves.add([row + 2 * direction, column]);
           }
         }
@@ -360,13 +361,11 @@ class _GameBoardState extends State<GameBoard> {
           [1, 1] // down right
         ];
         for (var direction in directions) {
-          var i = 1;
-
-          var newRow = row + i * direction[0];
-          var newColumn = column + i * direction[1];
+          var newRow = row + direction[0];
+          var newColumn = column + direction[1];
           // if its out of the board stop
           if (!isInBoard(newRow, newColumn)) {
-            break;
+            continue;
           }
           // a piece is detected
           if (board[newRow][newColumn] != null) {
@@ -374,7 +373,7 @@ class _GameBoardState extends State<GameBoard> {
             if (board[newRow][newColumn]!.isWhite != piece.isWhite) {
               candidateMoves.add([newRow, newColumn]); // kill
             }
-            break;
+            continue;
           }
           candidateMoves.add([newRow, newColumn]);
         }
@@ -535,7 +534,7 @@ class _GameBoardState extends State<GameBoard> {
 
   void resetGame() {
     Navigator.pop(context);
-    _initalizeState();
+    _initializeBoard();
     checkStatus = false;
     whitePiecesTaken.clear();
     blackPiecesTaken.clear();
@@ -588,8 +587,8 @@ class _GameBoardState extends State<GameBoard> {
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 8),
               itemBuilder: (context, index) {
-                final int row = ((index / 8).floor());
-                final int column = (((index % 8)).ceil());
+                final int row = index ~/ 8; // integer divison for the row
+                final int column = index % 8; // remaider divison for the column
 
                 bool isSelected =
                     selectedRow == row && selectedColumn == column;

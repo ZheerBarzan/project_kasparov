@@ -1,8 +1,8 @@
 bool isWhite(int index) {
-  final int row = ((index / 8).floor());
-  final int col = (((index % 8)).ceil());
+  final int row = index ~/ 8; // integer divison for the row
+  final int column = index % 8; // remaider divison for the column
 
-  bool isWhite = (row + col) % 2 == 0;
+  bool isWhite = (row + column) % 2 == 0;
 
   return isWhite;
 }

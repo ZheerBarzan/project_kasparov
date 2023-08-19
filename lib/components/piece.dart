@@ -1,11 +1,4 @@
-enum ChessPieceType {
-  pwan,
-  rook,
-  knight,
-  bishop,
-  queen,
-  king;
-}
+enum ChessPieceType { pwan, rook, knight, bishop, queen, king }
 
 class ChessPiece {
   final ChessPieceType type;
