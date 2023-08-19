@@ -42,10 +42,10 @@ class _GameBoardState extends State<GameBoard> {
   @override
   void initState() {
     super.initState();
-    initalizeState();
+    _initalizeState();
   }
 
-  void initalizeState() {
+  void _initalizeState() {
     // initalize the board with nulls meaning no pices in the positions
     List<List<ChessPiece?>> newBoard =
         List.generate(8, (index) => List.generate(8, (index) => null));
@@ -438,6 +438,18 @@ class _GameBoardState extends State<GameBoard> {
       validMoves = [];
     });
 
+    if (isCheckMate(!isWhiteTurn)) {
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+                title: const Text("CHECK MATE!"),
+                actions: [
+                  TextButton(
+                      onPressed: resetGame, child: const Text("Play Again"))
+                ],
+              ));
+    }
+
     isWhiteTurn = !isWhiteTurn;
   }
 
@@ -499,6 +511,40 @@ class _GameBoardState extends State<GameBoard> {
     return !kingInCheck;
   }
 
+  bool isCheckMate(bool isKing) {
+    if (!isKingInCheck(isKing)) {
+      return false;
+    }
+    for (int row = 0; row < 8; row++) {
+      for (int column = 0; column < 8; column++) {
+        // skip the empty squares and pieces that are similer to the king
+        if (board[row][column] == null ||
+            board[row][column]!.isWhite != isKing) {
+          continue;
+        }
+
+        List<List<int>> pieceValidMove =
+            calculateRealValidMoves(row, column, board[row][column], true);
+        if (pieceValidMove.isNotEmpty) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  void resetGame() {
+    Navigator.pop(context);
+    _initalizeState();
+    checkStatus = false;
+    whitePiecesTaken.clear();
+    blackPiecesTaken.clear();
+    whiteKingPosition = [7, 4];
+    blackKingPosition = [0, 4];
+    isWhiteTurn = true;
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -510,8 +556,8 @@ class _GameBoardState extends State<GameBoard> {
             child: GridView.builder(
               itemCount: whitePiecesTaken.length,
               physics: const NeverScrollableScrollPhysics(),
-              gridDelegate:
-                  SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 8),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 8),
               itemBuilder: (context, index) => DeadPiece(
                 imagePath: whitePiecesTaken[index].imagePath,
                 isWhite: true,
