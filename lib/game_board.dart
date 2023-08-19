@@ -181,11 +181,8 @@ class _GameBoardState extends State<GameBoard> {
         }
 
         // if the piece is selected calculate the valid moves
-        validMoves = calculateValidMoves(
-          selectedRow,
-          selectedColumn,
-          selectedPiece,
-        );
+        validMoves = calculateRealValidMoves(
+            selectedRow, selectedColumn, selectedPiece, true);
       },
     );
   }
@@ -387,6 +384,26 @@ class _GameBoardState extends State<GameBoard> {
     return candidateMoves;
   }
 
+  List<List<int>> calculateRealValidMoves(
+      int row, int column, ChessPiece? piece, bool checkSimulation) {
+    List<List<int>> realMoves = [];
+    List<List<int>> candidateMoves = calculateValidMoves(row, column, piece);
+
+    if (checkSimulation) {
+      for (var move in candidateMoves) {
+        int endRow = move[0];
+        int endColumn = move[1];
+
+        if (simulateMoveIsSafe(piece!, row, column, endRow, endColumn)) {
+          realMoves.add(move);
+        }
+      }
+    } else {
+      realMoves = candidateMoves;
+    }
+    return realMoves;
+  }
+
   // move the pieces
   void movePiece(int newRow, int newColumn) {
     if (board[newRow][newColumn] != null) {
@@ -395,6 +412,14 @@ class _GameBoardState extends State<GameBoard> {
         whitePiecesTaken.add(capturedPiece);
       } else {
         blackPiecesTaken.add(capturedPiece);
+      }
+    }
+
+    if (selectedPiece!.type == ChessPieceType.king) {
+      if (selectedPiece!.isWhite) {
+        whiteKingPosition = [newRow, newColumn];
+      } else {
+        blackKingPosition = [newRow, newColumn];
       }
     }
     //move the piece and clear the old spot
@@ -429,7 +454,7 @@ class _GameBoardState extends State<GameBoard> {
           continue;
         }
         List<List<int>> pieceValidMove =
-            calculateValidMoves(row, column, board[row][column]);
+            calculateRealValidMoves(row, column, board[row][column], false);
 
         if (pieceValidMove.any((move) =>
             move[0] == kingPosition[0] && move[1] == kingPosition[1])) {
@@ -438,6 +463,40 @@ class _GameBoardState extends State<GameBoard> {
       }
     }
     return false;
+  }
+
+  bool simulateMoveIsSafe(ChessPiece piece, int startRow, int startColumn,
+      int endRow, int endColumn) {
+    ChessPiece? originalDestinationPiece = board[endRow][endColumn];
+
+    List<int>? originalKingPosition;
+
+    if (piece.type == ChessPieceType.king) {
+      originalKingPosition =
+          piece.isWhite ? whiteKingPosition : blackKingPosition;
+      if (piece.isWhite) {
+        whiteKingPosition = [endRow, endColumn];
+      } else {
+        blackKingPosition = [endRow, endColumn];
+      }
+    }
+
+    board[endRow][endColumn] = piece;
+    board[startRow][startColumn] = null;
+
+    bool kingInCheck = isKingInCheck(piece.isWhite);
+
+    board[startRow][startColumn] = piece;
+    board[endRow][endColumn] = originalDestinationPiece;
+
+    if (piece.type == ChessPieceType.king) {
+      if (piece.isWhite) {
+        whiteKingPosition = originalKingPosition!;
+      } else {
+        blackKingPosition = originalKingPosition!;
+      }
+    }
+    return !kingInCheck;
   }
 
   @override
@@ -485,6 +544,7 @@ class _GameBoardState extends State<GameBoard> {
               itemBuilder: (context, index) {
                 final int row = ((index / 8).floor());
                 final int column = (((index % 8)).ceil());
+
                 bool isSelected =
                     selectedRow == row && selectedColumn == column;
 
