@@ -196,7 +196,7 @@ class _GameBoardState extends State<GameBoard> {
     }
 
     // diffrent directions based on thier color
-    int direction = piece!.isWhite ? -1 : 1;
+    int direction = piece.isWhite ? -1 : 1;
 
     switch (piece.type) {
       case ChessPieceType.pwan:
