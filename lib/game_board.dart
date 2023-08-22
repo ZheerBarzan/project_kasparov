@@ -14,6 +14,8 @@ class GameBoard extends StatefulWidget {
 }
 
 class _GameBoardState extends State<GameBoard> {
+// a 2-dimentional list representing the chess board
+//each postion contains a chess piece
   late List<List<ChessPiece?>> board;
 
 // if no piece is selected this is null
@@ -42,10 +44,10 @@ class _GameBoardState extends State<GameBoard> {
   @override
   void initState() {
     super.initState();
-    initalizeState();
+    _initializeBoard();
   }
 
-  void initalizeState() {
+  void _initializeBoard() {
     // initalize the board with nulls meaning no pices in the positions
     List<List<ChessPiece?>> newBoard =
         List.generate(8, (index) => List.generate(8, (index) => null));
@@ -63,7 +65,6 @@ class _GameBoardState extends State<GameBoard> {
         imagePath: "lib/images/pwan.png",
       );
     }
-
     // place rooks
     newBoard[0][0] = ChessPiece(
       type: ChessPieceType.rook,
@@ -181,11 +182,8 @@ class _GameBoardState extends State<GameBoard> {
         }
 
         // if the piece is selected calculate the valid moves
-        validMoves = calculateValidMoves(
-          selectedRow,
-          selectedColumn,
-          selectedPiece,
-        );
+        validMoves = calculateRealValidMoves(
+            selectedRow, selectedColumn, selectedPiece, true);
       },
     );
   }
@@ -198,7 +196,7 @@ class _GameBoardState extends State<GameBoard> {
     }
 
     // diffrent directions based on thier color
-    int direction = piece.isWhite ? -1 : 1;
+    int direction = piece!.isWhite ? -1 : 1;
 
     switch (piece.type) {
       case ChessPieceType.pwan:
@@ -211,7 +209,7 @@ class _GameBoardState extends State<GameBoard> {
         if ((row == 1 && !piece.isWhite) || (row == 6 && piece.isWhite)) {
           if (isInBoard(row + 2 * direction, column) &&
               board[row + 2 * direction][column] == null &&
-              board[row + 2 * direction][column] == null) {
+              board[row + direction][column] == null) {
             candidateMoves.add([row + 2 * direction, column]);
           }
         }
@@ -363,13 +361,11 @@ class _GameBoardState extends State<GameBoard> {
           [1, 1] // down right
         ];
         for (var direction in directions) {
-          var i = 1;
-
-          var newRow = row + i * direction[0];
-          var newColumn = column + i * direction[1];
+          var newRow = row + direction[0];
+          var newColumn = column + direction[1];
           // if its out of the board stop
           if (!isInBoard(newRow, newColumn)) {
-            break;
+            continue;
           }
           // a piece is detected
           if (board[newRow][newColumn] != null) {
@@ -377,7 +373,7 @@ class _GameBoardState extends State<GameBoard> {
             if (board[newRow][newColumn]!.isWhite != piece.isWhite) {
               candidateMoves.add([newRow, newColumn]); // kill
             }
-            break;
+            continue;
           }
           candidateMoves.add([newRow, newColumn]);
         }
@@ -385,6 +381,26 @@ class _GameBoardState extends State<GameBoard> {
         break;
     }
     return candidateMoves;
+  }
+
+  List<List<int>> calculateRealValidMoves(
+      int row, int column, ChessPiece? piece, bool checkSimulation) {
+    List<List<int>> realMoves = [];
+    List<List<int>> candidateMoves = calculateValidMoves(row, column, piece);
+
+    if (checkSimulation) {
+      for (var move in candidateMoves) {
+        int endRow = move[0];
+        int endColumn = move[1];
+
+        if (simulateMoveIsSafe(piece!, row, column, endRow, endColumn)) {
+          realMoves.add(move);
+        }
+      }
+    } else {
+      realMoves = candidateMoves;
+    }
+    return realMoves;
   }
 
   // move the pieces
@@ -395,6 +411,14 @@ class _GameBoardState extends State<GameBoard> {
         whitePiecesTaken.add(capturedPiece);
       } else {
         blackPiecesTaken.add(capturedPiece);
+      }
+    }
+
+    if (selectedPiece!.type == ChessPieceType.king) {
+      if (selectedPiece!.isWhite) {
+        whiteKingPosition = [newRow, newColumn];
+      } else {
+        blackKingPosition = [newRow, newColumn];
       }
     }
     //move the piece and clear the old spot
@@ -413,6 +437,18 @@ class _GameBoardState extends State<GameBoard> {
       validMoves = [];
     });
 
+    if (isCheckMate(!isWhiteTurn)) {
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+                title: const Text("CHECK MATE!"),
+                actions: [
+                  TextButton(
+                      onPressed: resetGame, child: const Text("Play Again"))
+                ],
+              ));
+    }
+
     isWhiteTurn = !isWhiteTurn;
   }
 
@@ -429,7 +465,7 @@ class _GameBoardState extends State<GameBoard> {
           continue;
         }
         List<List<int>> pieceValidMove =
-            calculateValidMoves(row, column, board[row][column]);
+            calculateRealValidMoves(row, column, board[row][column], false);
 
         if (pieceValidMove.any((move) =>
             move[0] == kingPosition[0] && move[1] == kingPosition[1])) {
@@ -438,6 +474,74 @@ class _GameBoardState extends State<GameBoard> {
       }
     }
     return false;
+  }
+
+  bool simulateMoveIsSafe(ChessPiece piece, int startRow, int startColumn,
+      int endRow, int endColumn) {
+    ChessPiece? originalDestinationPiece = board[endRow][endColumn];
+
+    List<int>? originalKingPosition;
+
+    if (piece.type == ChessPieceType.king) {
+      originalKingPosition =
+          piece.isWhite ? whiteKingPosition : blackKingPosition;
+      if (piece.isWhite) {
+        whiteKingPosition = [endRow, endColumn];
+      } else {
+        blackKingPosition = [endRow, endColumn];
+      }
+    }
+
+    board[endRow][endColumn] = piece;
+    board[startRow][startColumn] = null;
+
+    bool kingInCheck = isKingInCheck(piece.isWhite);
+
+    board[startRow][startColumn] = piece;
+    board[endRow][endColumn] = originalDestinationPiece;
+
+    if (piece.type == ChessPieceType.king) {
+      if (piece.isWhite) {
+        whiteKingPosition = originalKingPosition!;
+      } else {
+        blackKingPosition = originalKingPosition!;
+      }
+    }
+    return !kingInCheck;
+  }
+
+  bool isCheckMate(bool isKing) {
+    if (!isKingInCheck(isKing)) {
+      return false;
+    }
+    for (int row = 0; row < 8; row++) {
+      for (int column = 0; column < 8; column++) {
+        // skip the empty squares and pieces that are similer to the king
+        if (board[row][column] == null ||
+            board[row][column]!.isWhite != isKing) {
+          continue;
+        }
+
+        List<List<int>> pieceValidMove =
+            calculateRealValidMoves(row, column, board[row][column], true);
+        if (pieceValidMove.isNotEmpty) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  void resetGame() {
+    Navigator.pop(context);
+    _initializeBoard();
+    checkStatus = false;
+    whitePiecesTaken.clear();
+    blackPiecesTaken.clear();
+    whiteKingPosition = [7, 4];
+    blackKingPosition = [0, 4];
+    isWhiteTurn = true;
+    setState(() {});
   }
 
   @override
@@ -451,8 +555,8 @@ class _GameBoardState extends State<GameBoard> {
             child: GridView.builder(
               itemCount: whitePiecesTaken.length,
               physics: const NeverScrollableScrollPhysics(),
-              gridDelegate:
-                  SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 8),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 8),
               itemBuilder: (context, index) => DeadPiece(
                 imagePath: whitePiecesTaken[index].imagePath,
                 isWhite: true,
@@ -483,8 +587,9 @@ class _GameBoardState extends State<GameBoard> {
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 8),
               itemBuilder: (context, index) {
-                final int row = ((index / 8).floor());
-                final int column = (((index % 8)).ceil());
+                final int row = index ~/ 8; // integer divison for the row
+                final int column = index % 8; // remaider divison for the column
+
                 bool isSelected =
                     selectedRow == row && selectedColumn == column;
 
