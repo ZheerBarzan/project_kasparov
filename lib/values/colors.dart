@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
 
-var backgroundColor = Color.fromARGB(1000, 180, 137, 101);
 var foregroundColor = Colors.grey.shade300;
+var backgroundColor = Colors.grey.shade800;
 var deadPieceColor = Colors.black;

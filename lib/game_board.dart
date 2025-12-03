@@ -541,7 +541,12 @@ class _GameBoardState extends State<GameBoard> {
     whiteKingPosition = [7, 4];
     blackKingPosition = [0, 4];
     isWhiteTurn = true;
-    setState(() {});
+    setState(() {
+      selectedPiece = null;
+      selectedRow = -1;
+      selectedColumn = -1;
+      validMoves.clear();
+    });
   }
 
   @override
