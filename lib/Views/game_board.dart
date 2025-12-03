@@ -4,7 +4,7 @@ import 'package:project_kasparov/components/squre.dart';
 import 'package:project_kasparov/helper/helper_functions.dart';
 import 'package:project_kasparov/values/colors.dart';
 
-import 'components/DeadPiece.dart';
+import '../components/DeadPiece.dart';
 
 class GameBoard extends StatefulWidget {
   const GameBoard({super.key});
