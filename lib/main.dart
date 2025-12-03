@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:project_kasparov/game_board.dart';
+import 'package:project_kasparov/Views/game_board.dart';
+import 'package:project_kasparov/Views/launch_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,7 +14,7 @@ class MyApp extends StatelessWidget {
     return const SafeArea(
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: GameBoard(),
+        home: LaunchScreen(),
       ),
     );
   }
