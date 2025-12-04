@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:project_kasparov/Theme/themes.dart';
 import 'package:project_kasparov/Views/home_page.dart';
 
 void main() {
@@ -13,9 +14,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Project Kasparov',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme: AppTheme.dark,
       home: HomePage(),
     );
   }

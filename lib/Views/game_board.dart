@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:project_kasparov/components/piece.dart';
 import 'package:project_kasparov/components/squre.dart';
 import 'package:project_kasparov/helper/helper_functions.dart';
-import 'package:project_kasparov/values/colors.dart';
+import 'package:project_kasparov/Theme/colors.dart';
 
 import '../components/DeadPiece.dart';
 
@@ -552,6 +552,21 @@ class _GameBoardState extends State<GameBoard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            onPressed: resetGame,
+          ),
+        ],
+        backgroundColor: Colors.transparent,
+      ),
       backgroundColor: backgroundColor,
       body: Column(
         children: [

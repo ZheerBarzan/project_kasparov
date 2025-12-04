@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:project_kasparov/components/piece.dart';
-import 'package:project_kasparov/values/colors.dart';
+import 'package:project_kasparov/Theme/colors.dart';
 
 class Squre extends StatelessWidget {
   final bool isWhite;
