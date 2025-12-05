@@ -410,6 +410,16 @@ class GameViewModel extends ChangeNotifier {
     //move the piece and clear the old spot
     board[newRow][newColumn] = selectedPiece;
     board[selectedRow][selectedColumn] = null;
+
+    // check for promotion
+    if (selectedPiece!.type == ChessPieceType.pwan) {
+      if ((selectedPiece!.isWhite && newRow == 0) ||
+          (!selectedPiece!.isWhite && newRow == 7)) {
+        _showPromotionDialog(
+            context, newRow, newColumn, selectedPiece!.isWhite);
+      }
+    }
+
     if (isKingInCheck(!isWhiteTurn)) {
       checkStatus = true;
     } else {
@@ -535,5 +545,87 @@ class GameViewModel extends ChangeNotifier {
     selectedColumn = -1;
     validMoves.clear();
     notifyListeners();
+  }
+
+  void _showPromotionDialog(
+      BuildContext context, int row, int col, bool isWhite) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Promote to:"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: Image.asset(
+                  "lib/images/${isWhite ? 'queen' : 'queen'}.png",
+                  color: isWhite ? Colors.white : Colors.black,
+                ),
+                title: const Text("Queen"),
+                onTap: () {
+                  board[row][col] = ChessPiece(
+                    type: ChessPieceType.queen,
+                    isWhite: isWhite,
+                    imagePath: "lib/images/queen.png",
+                  );
+                  Navigator.pop(context);
+                  notifyListeners();
+                },
+              ),
+              ListTile(
+                leading: Image.asset(
+                  "lib/images/${isWhite ? 'rook' : 'rook'}.png",
+                  color: isWhite ? Colors.white : Colors.black,
+                ),
+                title: const Text("Rook"),
+                onTap: () {
+                  board[row][col] = ChessPiece(
+                    type: ChessPieceType.rook,
+                    isWhite: isWhite,
+                    imagePath: "lib/images/rook.png",
+                  );
+                  Navigator.pop(context);
+                  notifyListeners();
+                },
+              ),
+              ListTile(
+                leading: Image.asset(
+                  "lib/images/${isWhite ? 'bishop' : 'bishop'}.png",
+                  color: isWhite ? Colors.white : Colors.black,
+                ),
+                title: const Text("Bishop"),
+                onTap: () {
+                  board[row][col] = ChessPiece(
+                    type: ChessPieceType.bishop,
+                    isWhite: isWhite,
+                    imagePath: "lib/images/bishop.png",
+                  );
+                  Navigator.pop(context);
+                  notifyListeners();
+                },
+              ),
+              ListTile(
+                leading: Image.asset(
+                  "lib/images/${isWhite ? 'knight' : 'knight'}.png",
+                  color: isWhite ? Colors.white : Colors.black,
+                ),
+                title: const Text("Knight"),
+                onTap: () {
+                  board[row][col] = ChessPiece(
+                    type: ChessPieceType.knight,
+                    isWhite: isWhite,
+                    imagePath: "lib/images/knight.png",
+                  );
+                  Navigator.pop(context);
+                  notifyListeners();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

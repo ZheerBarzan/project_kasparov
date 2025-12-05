@@ -45,7 +45,7 @@ class HomePage extends StatelessWidget {
             ),
             Spacer(),
             Text(
-              'Made by Zheer in a Hurry',
+              'Made by Zheer Barzan',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
