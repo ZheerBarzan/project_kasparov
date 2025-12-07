@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:project_kasparov/Theme/colors.dart';
 import 'package:project_kasparov/Views/game_board.dart';
 import 'package:project_kasparov/viewmodels/game_view_model.dart';
+import 'package:provider/provider.dart';
 
-class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+class GameModesPage extends StatelessWidget {
+  const GameModesPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -12,17 +13,55 @@ class HomePage extends StatelessWidget {
       backgroundColor: Colors.white,
       body: Center(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image(image: AssetImage('lib/images/icon.png')),
+            const SizedBox(height: 50),
+            // ICON
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Image.asset(
+                'lib/images/icon.png',
+
+                height: 200, // slightly smaller to fit better in tab view
+              ),
+            ),
+
+            // Text
             Text(
               'P R O J E C T _ K A S P A R O V',
               style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w500,
                 color: Colors.black,
+                fontSize: 25,
+                fontWeight: FontWeight.normal,
+                letterSpacing: 2,
               ),
             ),
-            Spacer(),
+
+            const SizedBox(height: 50),
+
+            // BUTTONS
+            ElevatedButton(
+              onPressed: () {
+                // TODO: Implement AI Play
+              },
+              style: ElevatedButton.styleFrom(),
+              child: Text('Play with AI'),
+            ),
+            SizedBox(height: 30),
+            ElevatedButton(
+              onPressed: () {
+                // TODO: Implement Stockfish Play
+                Provider.of<GameViewModel>(context, listen: false)
+                    .initializeGame(GameMode.classical);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => GameBoard()),
+                );
+              },
+              style: ElevatedButton.styleFrom(),
+              child: Text('Play with Stockfish'),
+            ),
+            SizedBox(height: 30),
             ElevatedButton(
               onPressed: () {
                 Provider.of<GameViewModel>(context, listen: false)
@@ -60,15 +99,6 @@ class HomePage extends StatelessWidget {
               },
               style: ElevatedButton.styleFrom(),
               child: Text('Blitz Chess'),
-            ),
-            Spacer(),
-            Text(
-              'Made by Zheer Barzan',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: Colors.black,
-              ),
             ),
           ],
         ),

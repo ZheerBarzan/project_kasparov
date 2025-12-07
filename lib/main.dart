@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:project_kasparov/Theme/themes.dart';
-import 'package:project_kasparov/Views/home_page.dart';
+import 'package:project_kasparov/Views/main_page.dart';
 import 'package:project_kasparov/viewmodels/game_view_model.dart';
 
 void main() {
@@ -19,7 +19,7 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: 'Project Kasparov',
         theme: AppTheme.dark,
-        home: HomePage(),
+        home: const MainPage(),
       ),
     );
   }
