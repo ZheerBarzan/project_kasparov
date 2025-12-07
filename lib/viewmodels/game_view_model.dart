@@ -508,6 +508,20 @@ class GameViewModel extends ChangeNotifier {
                       child: const Text("Play Again"))
                 ],
               ));
+    } else if (isStalemate(!isWhiteTurn)) {
+      showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+                title: const Text("STALEMATE"),
+                content: const Text("Draw game."),
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        resetGame(context);
+                      },
+                      child: const Text("Play Again"))
+                ],
+              ));
     }
 
     isWhiteTurn = !isWhiteTurn;
@@ -581,9 +595,20 @@ class GameViewModel extends ChangeNotifier {
     if (!isKingInCheck(isKing)) {
       return false;
     }
+    return !_hasAnyLegalMoves(isKing);
+  }
+
+  bool isStalemate(bool isKing) {
+    if (isKingInCheck(isKing)) {
+      return false;
+    }
+    return !_hasAnyLegalMoves(isKing);
+  }
+
+  bool _hasAnyLegalMoves(bool isKing) {
     for (int row = 0; row < 8; row++) {
       for (int column = 0; column < 8; column++) {
-        // skip the empty squares and pieces that are similer to the king
+        // skip the empty squares and pieces that are NOT similer to the king (we want king's own pieces)
         if (board[row][column] == null ||
             board[row][column]!.isWhite != isKing) {
           continue;
@@ -592,11 +617,11 @@ class GameViewModel extends ChangeNotifier {
         List<List<int>> pieceValidMove =
             calculateRealValidMoves(row, column, board[row][column], true);
         if (pieceValidMove.isNotEmpty) {
-          return false;
+          return true; // Found at least one legal move
         }
       }
     }
-    return true;
+    return false; // No legal moves found
   }
 
   void resetGame(BuildContext context) {
