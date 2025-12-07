@@ -4,7 +4,7 @@ import 'package:project_kasparov/components/squre.dart';
 import 'package:project_kasparov/helper/helper_functions.dart';
 import 'package:project_kasparov/Theme/colors.dart';
 import 'package:project_kasparov/viewmodels/game_view_model.dart';
-import '../components/DeadPiece.dart';
+import '../components/taken_pieces_display.dart';
 
 class GameBoard extends StatefulWidget {
   const GameBoard({super.key});
@@ -38,150 +38,142 @@ class _GameBoardState extends State<GameBoard> {
         backgroundColor: Colors.transparent,
       ),
       backgroundColor: backgroundColor,
-      body: Consumer<GameViewModel>(
-        builder: (context, viewModel, child) {
-          // Handle Timeout Dialog trigger
-          if (viewModel.isTimeOver && !_hasShownTimeoutDialog) {
-            _hasShownTimeoutDialog = true;
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              _showTimeoutDialog(context, viewModel);
-            });
-          }
-          // Reset dialog flag if game is reset
-          if (!viewModel.isTimeOver && _hasShownTimeoutDialog) {
-            _hasShownTimeoutDialog = false;
-          }
+      body: SafeArea(
+        child: Consumer<GameViewModel>(
+          builder: (context, viewModel, child) {
+            // Handle Timeout Dialog trigger
+            if (viewModel.isTimeOver && !_hasShownTimeoutDialog) {
+              _hasShownTimeoutDialog = true;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                _showTimeoutDialog(context, viewModel);
+              });
+            }
+            // Reset dialog flag if game is reset
+            if (!viewModel.isTimeOver && _hasShownTimeoutDialog) {
+              _hasShownTimeoutDialog = false;
+            }
 
-          return Column(
-            children: [
-              // white pieces taken on the screen
-              Expanded(
-                child: GridView.builder(
-                  itemCount: viewModel.whitePiecesTaken.length,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 8),
-                  itemBuilder: (context, index) => DeadPiece(
-                    imagePath: viewModel.whitePiecesTaken[index].imagePath,
-                    isWhite: true,
-                  ),
+            return Column(
+              children: [
+                // white pieces taken on the screen
+                TakenPiecesDisplay(
+                  pieces: viewModel.whitePiecesTaken,
+                  isWhite: true,
                 ),
-              ),
 
-              // BLACK TIMER
-              if (viewModel.gameMode != GameMode.classical)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 20.0, vertical: 10.0),
-                  decoration: BoxDecoration(
-                    color: !viewModel.isWhiteTurn && !viewModel.isTimeOver
-                        ? Colors.lightGreen
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    _formatTime(viewModel.blackTimeRemaining),
-                    style: TextStyle(
+                // BLACK TIMER
+                if (viewModel.gameMode != GameMode.classical)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20.0, vertical: 10.0),
+                    decoration: BoxDecoration(
                       color: !viewModel.isWhiteTurn && !viewModel.isTimeOver
-                          ? Colors.black // Make text readable on green
-                          : Colors.white,
-                      fontSize: 32, // Bigger clock
-                      fontWeight: FontWeight.bold,
+                          ? Colors.lightGreen
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      _formatTime(viewModel.blackTimeRemaining),
+                      style: TextStyle(
+                        color: !viewModel.isWhiteTurn && !viewModel.isTimeOver
+                            ? Colors.black // Make text readable on green
+                            : Colors.white,
+                        fontSize: 32, // Bigger clock
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
 
-              Container(
-                margin: const EdgeInsets.all(15.0),
-                padding: const EdgeInsets.all(8.0),
-                decoration: (viewModel.checkStatus)
-                    ? BoxDecoration(
-                        border: Border.all(color: Colors.redAccent),
-                        borderRadius: BorderRadius.circular(5),
-                        color: Colors.redAccent,
-                      )
-                    : null,
-                child: Text(
-                  viewModel.checkStatus ? "Check!" : "",
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-
-              Expanded(
-                flex: 3,
-                child: GridView.builder(
-                  // padding: const EdgeInsets.only(top: 180),
-                  itemCount: 8 * 8,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 8),
-                  itemBuilder: (context, index) {
-                    final int row = index ~/ 8; // integer divison for the row
-                    final int column =
-                        index % 8; // remaider divison for the column
-
-                    bool isSelected = viewModel.selectedRow == row &&
-                        viewModel.selectedColumn == column;
-
-                    // check is a valid move
-                    bool isValidMove = false;
-                    for (var position in viewModel.validMoves) {
-                      // comapre rows and columns
-                      if (position[0] == row && position[1] == column) {
-                        isValidMove = true;
-                      }
-                    }
-                    return Squre(
-                      isWhite: isWhite(index),
-                      piece: viewModel.board[row][column],
-                      isSelected: isSelected,
-                      onTap: () =>
-                          viewModel.pieceSelected(row, column, context),
-                      isValid: isValidMove,
-                    );
-                  },
-                ),
-              ),
-
-              // WHITE TIMER
-              if (viewModel.gameMode != GameMode.classical)
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 20.0, vertical: 10.0),
-                  decoration: BoxDecoration(
-                    color: viewModel.isWhiteTurn && !viewModel.isTimeOver
-                        ? Colors.lightGreen
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  margin: const EdgeInsets.all(15.0),
+                  padding: const EdgeInsets.all(8.0),
+                  decoration: (viewModel.checkStatus)
+                      ? BoxDecoration(
+                          border: Border.all(color: Colors.redAccent),
+                          borderRadius: BorderRadius.circular(5),
+                          color: Colors.redAccent,
+                        )
+                      : null,
                   child: Text(
-                    _formatTime(viewModel.whiteTimeRemaining),
-                    style: TextStyle(
-                      color: viewModel.isWhiteTurn && !viewModel.isTimeOver
-                          ? Colors.black // Make text readable on green
-                          : Colors.white,
-                      fontSize: 32, // Bigger clock
-                      fontWeight: FontWeight.bold,
-                    ),
+                    viewModel.checkStatus ? "Check!" : "",
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
 
-              // black pieces taken by white (displayed at bottom)
-              Expanded(
-                child: GridView.builder(
-                  itemCount: viewModel.blackPiecesTaken.length,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 8),
-                  itemBuilder: (context, index) => DeadPiece(
-                    imagePath: viewModel.blackPiecesTaken[index].imagePath,
-                    isWhite: false,
+                const SizedBox(
+                    height: 10), // Space between status/timer and board
+
+                // CHESS BOARD
+                AspectRatio(
+                  aspectRatio: 1.0,
+                  child: GridView.builder(
+                    itemCount: 8 * 8,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 8),
+                    itemBuilder: (context, index) {
+                      final int row = index ~/ 8;
+                      final int column = index % 8;
+
+                      bool isSelected = viewModel.selectedRow == row &&
+                          viewModel.selectedColumn == column;
+
+                      bool isValidMove = false;
+                      for (var position in viewModel.validMoves) {
+                        if (position[0] == row && position[1] == column) {
+                          isValidMove = true;
+                        }
+                      }
+                      return Squre(
+                        isWhite: isWhite(index),
+                        piece: viewModel.board[row][column],
+                        isSelected: isSelected,
+                        onTap: () =>
+                            viewModel.pieceSelected(row, column, context),
+                        isValid: isValidMove,
+                      );
+                    },
                   ),
                 ),
-              ),
-            ],
-          );
-        },
+
+                const SizedBox(
+                    height: 10), // Space between board and white timer
+
+                // WHITE TIMER
+                if (viewModel.gameMode != GameMode.classical)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20.0, vertical: 10.0),
+                    decoration: BoxDecoration(
+                      color: viewModel.isWhiteTurn && !viewModel.isTimeOver
+                          ? Colors.lightGreen
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      _formatTime(viewModel.whiteTimeRemaining),
+                      style: TextStyle(
+                        color: viewModel.isWhiteTurn && !viewModel.isTimeOver
+                            ? Colors.black // Make text readable on green
+                            : Colors.white,
+                        fontSize: 32, // Bigger clock
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+
+                // white pieces taken by the black player (displayed at bottom, but these are black pieces captured by white? No, name is blackPiecesTaken)
+                // Wait, viewModel.blackPiecesTaken usually means "Pieces that are Black, and have been Taken".
+                // So these are Black pieces.
+                TakenPiecesDisplay(
+                  pieces: viewModel.blackPiecesTaken,
+                  isWhite: false,
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

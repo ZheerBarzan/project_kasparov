@@ -65,9 +65,6 @@ class GameViewModel extends ChangeNotifier {
         break;
     }
     _initializeBoard();
-    if (mode != GameMode.classical) {
-      startTimer();
-    }
     notifyListeners();
   }
 
