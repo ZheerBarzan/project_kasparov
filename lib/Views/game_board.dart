@@ -48,10 +48,25 @@ class GameBoard extends StatelessWidget {
                   ),
                 ),
               ),
+
+              // BLACK TIMER
+              if (viewModel.gameMode != GameMode.classical)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10.0),
+                  child: Text(
+                    "Black Time: ${_formatTime(viewModel.blackTimeRemaining)}",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+
               Container(
                 margin: const EdgeInsets.all(15.0),
                 padding: const EdgeInsets.all(8.0),
-                decoration: viewModel.checkStatus
+                decoration: (viewModel.checkStatus || viewModel.isTimeOver)
                     ? BoxDecoration(
                         border: Border.all(color: Colors.redAccent),
                         borderRadius: BorderRadius.circular(5),
@@ -59,7 +74,12 @@ class GameBoard extends StatelessWidget {
                       )
                     : null,
                 child: Text(
-                  viewModel.checkStatus ? "Check!" : "",
+                  viewModel.isTimeOver
+                      ? (viewModel.isWhiteTurn
+                          ? "WHITE TIME OUT!"
+                          : "BLACK TIME OUT!")
+                      : (viewModel.checkStatus ? "Check!" : ""),
+                  style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
 
@@ -98,7 +118,22 @@ class GameBoard extends StatelessWidget {
                   },
                 ),
               ),
-              // white pieces taken on the screen
+
+              // WHITE TIMER
+              if (viewModel.gameMode != GameMode.classical)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10.0),
+                  child: Text(
+                    "White Time: ${_formatTime(viewModel.whiteTimeRemaining)}",
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+
+              // black pieces taken by white (displayed at bottom)
               Expanded(
                 child: GridView.builder(
                   itemCount: viewModel.blackPiecesTaken.length,
@@ -116,5 +151,13 @@ class GameBoard extends StatelessWidget {
         },
       ),
     );
+  }
+
+  // Helper to format duration
+  String _formatTime(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final minutes = twoDigits(duration.inMinutes.remainder(60));
+    final seconds = twoDigits(duration.inSeconds.remainder(60));
+    return "$minutes:$seconds";
   }
 }

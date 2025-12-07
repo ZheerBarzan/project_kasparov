@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:project_kasparov/Views/game_board.dart';
+import 'package:project_kasparov/viewmodels/game_view_model.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -23,6 +25,8 @@ class HomePage extends StatelessWidget {
             Spacer(),
             ElevatedButton(
               onPressed: () {
+                Provider.of<GameViewModel>(context, listen: false)
+                    .initializeGame(GameMode.classical);
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => GameBoard()),
@@ -33,13 +37,27 @@ class HomePage extends StatelessWidget {
             ),
             SizedBox(height: 30),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Provider.of<GameViewModel>(context, listen: false)
+                    .initializeGame(GameMode.quick);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => GameBoard()),
+                );
+              },
               style: ElevatedButton.styleFrom(),
               child: Text('Quick Chess'),
             ),
             SizedBox(height: 30),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Provider.of<GameViewModel>(context, listen: false)
+                    .initializeGame(GameMode.blitz);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => GameBoard()),
+                );
+              },
               style: ElevatedButton.styleFrom(),
               child: Text('Blitz Chess'),
             ),

@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:project_kasparov/models/piece.dart';
 import 'package:project_kasparov/helper/helper_functions.dart';
+
+enum GameMode { classical, quick, blitz }
 
 class GameViewModel extends ChangeNotifier {
   // a 2-dimentional list representing the chess board
@@ -31,8 +34,71 @@ class GameViewModel extends ChangeNotifier {
   List<int> blackKingPosition = [0, 4];
   bool checkStatus = false;
 
+  // Timer properties
+  GameMode gameMode = GameMode.classical;
+  Duration whiteTimeRemaining = Duration.zero;
+  Duration blackTimeRemaining = Duration.zero;
+  Timer? _gameTimer;
+  bool isTimeOver = false; // To track if someone lost by time
+
   GameViewModel() {
     _initializeBoard();
+  }
+
+  void initializeGame(GameMode mode) {
+    gameMode = mode;
+    isTimeOver = false;
+    _gameTimer?.cancel();
+
+    switch (mode) {
+      case GameMode.classical:
+        whiteTimeRemaining = Duration.zero;
+        blackTimeRemaining = Duration.zero;
+        break;
+      case GameMode.quick:
+        whiteTimeRemaining = const Duration(minutes: 10);
+        blackTimeRemaining = const Duration(minutes: 10);
+        break;
+      case GameMode.blitz:
+        whiteTimeRemaining = const Duration(minutes: 3);
+        blackTimeRemaining = const Duration(minutes: 3);
+        break;
+    }
+    _initializeBoard();
+    if (mode != GameMode.classical) {
+      startTimer();
+    }
+    notifyListeners();
+  }
+
+  void startTimer() {
+    if (gameMode == GameMode.classical) return;
+
+    _gameTimer?.cancel();
+    _gameTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (isWhiteTurn) {
+        if (whiteTimeRemaining.inSeconds > 0) {
+          whiteTimeRemaining -= const Duration(seconds: 1);
+        } else {
+          _gameTimer?.cancel();
+          isTimeOver = true;
+          notifyListeners();
+        }
+      } else {
+        if (blackTimeRemaining.inSeconds > 0) {
+          blackTimeRemaining -= const Duration(seconds: 1);
+        } else {
+          _gameTimer?.cancel();
+          isTimeOver = true;
+          notifyListeners();
+        }
+      }
+      notifyListeners();
+    });
+  }
+
+  void stopTimer() {
+    _gameTimer?.cancel();
   }
 
   void _initializeBoard() {
@@ -448,6 +514,11 @@ class GameViewModel extends ChangeNotifier {
     }
 
     isWhiteTurn = !isWhiteTurn;
+
+    // Switch timer if applicable
+    if (gameMode != GameMode.classical) {
+      startTimer();
+    }
     notifyListeners();
   }
 
@@ -533,7 +604,7 @@ class GameViewModel extends ChangeNotifier {
 
   void resetGame(BuildContext context) {
     Navigator.pop(context);
-    _initializeBoard();
+    initializeGame(gameMode); // Re-initialize with current mode
     checkStatus = false;
     whitePiecesTaken.clear();
     blackPiecesTaken.clear();
