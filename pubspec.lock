@@ -49,6 +49,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.4"
+  chess:
+    dependency: "direct main"
+    description:
+      name: chess
+      sha256: "6e5a8222931bfb5cd14a4bb9b030c24e257e23957ec3c533fb0ff74a48984ddb"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.8.1"
   cli_util:
     dependency: transitive
     description:
@@ -195,6 +203,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.0"
+  logging:
+    dependency: transitive
+    description:
+      name: logging
+      sha256: c8245ada5f1717ed44271ed1c26b8ce85ca3228fd2ffdb75468ab01979309d61
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.3.0"
   matcher:
     dependency: transitive
     description:
@@ -280,6 +296,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.12.1"
+  stockfish:
+    dependency: "direct main"
+    description:
+      name: stockfish
+      sha256: "6f282bd7c4313262b47eabff85a23e3ee9bb63ee66d1fc57860e810621f0f9b5"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.7.2"
   stream_channel:
     dependency: transitive
     description:

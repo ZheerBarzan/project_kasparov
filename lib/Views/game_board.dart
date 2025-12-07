@@ -6,8 +6,15 @@ import 'package:project_kasparov/Theme/colors.dart';
 import 'package:project_kasparov/viewmodels/game_view_model.dart';
 import '../components/DeadPiece.dart';
 
-class GameBoard extends StatelessWidget {
+class GameBoard extends StatefulWidget {
   const GameBoard({super.key});
+
+  @override
+  State<GameBoard> createState() => _GameBoardState();
+}
+
+class _GameBoardState extends State<GameBoard> {
+  bool _hasShownTimeoutDialog = false;
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +40,18 @@ class GameBoard extends StatelessWidget {
       backgroundColor: backgroundColor,
       body: Consumer<GameViewModel>(
         builder: (context, viewModel, child) {
+          // Handle Timeout Dialog trigger
+          if (viewModel.isTimeOver && !_hasShownTimeoutDialog) {
+            _hasShownTimeoutDialog = true;
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              _showTimeoutDialog(context, viewModel);
+            });
+          }
+          // Reset dialog flag if game is reset
+          if (!viewModel.isTimeOver && _hasShownTimeoutDialog) {
+            _hasShownTimeoutDialog = false;
+          }
+
           return Column(
             children: [
               // white pieces taken on the screen
@@ -51,13 +70,22 @@ class GameBoard extends StatelessWidget {
 
               // BLACK TIMER
               if (viewModel.gameMode != GameMode.classical)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10.0),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 20.0, vertical: 10.0),
+                  decoration: BoxDecoration(
+                    color: !viewModel.isWhiteTurn && !viewModel.isTimeOver
+                        ? Colors.lightGreen
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   child: Text(
-                    "Black Time: ${_formatTime(viewModel.blackTimeRemaining)}",
+                    _formatTime(viewModel.blackTimeRemaining),
                     style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
+                      color: !viewModel.isWhiteTurn && !viewModel.isTimeOver
+                          ? Colors.black // Make text readable on green
+                          : Colors.white,
+                      fontSize: 32, // Bigger clock
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -66,7 +94,7 @@ class GameBoard extends StatelessWidget {
               Container(
                 margin: const EdgeInsets.all(15.0),
                 padding: const EdgeInsets.all(8.0),
-                decoration: (viewModel.checkStatus || viewModel.isTimeOver)
+                decoration: (viewModel.checkStatus)
                     ? BoxDecoration(
                         border: Border.all(color: Colors.redAccent),
                         borderRadius: BorderRadius.circular(5),
@@ -74,11 +102,7 @@ class GameBoard extends StatelessWidget {
                       )
                     : null,
                 child: Text(
-                  viewModel.isTimeOver
-                      ? (viewModel.isWhiteTurn
-                          ? "WHITE TIME OUT!"
-                          : "BLACK TIME OUT!")
-                      : (viewModel.checkStatus ? "Check!" : ""),
+                  viewModel.checkStatus ? "Check!" : "",
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
@@ -121,13 +145,22 @@ class GameBoard extends StatelessWidget {
 
               // WHITE TIMER
               if (viewModel.gameMode != GameMode.classical)
-                Padding(
-                  padding: const EdgeInsets.only(top: 10.0),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 20.0, vertical: 10.0),
+                  decoration: BoxDecoration(
+                    color: viewModel.isWhiteTurn && !viewModel.isTimeOver
+                        ? Colors.lightGreen
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                   child: Text(
-                    "White Time: ${_formatTime(viewModel.whiteTimeRemaining)}",
+                    _formatTime(viewModel.whiteTimeRemaining),
                     style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
+                      color: viewModel.isWhiteTurn && !viewModel.isTimeOver
+                          ? Colors.black // Make text readable on green
+                          : Colors.white,
+                      fontSize: 32, // Bigger clock
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -149,6 +182,39 @@ class GameBoard extends StatelessWidget {
             ],
           );
         },
+      ),
+    );
+  }
+
+  void _showTimeoutDialog(BuildContext context, GameViewModel viewModel) {
+    // Determine winner based on whose turn triggered the timeout
+    String winner = viewModel.isWhiteTurn ? "Black" : "White";
+    String loser = viewModel.isWhiteTurn ? "White" : "Black";
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text("Time Out!"),
+        content: Text("$loser time out. $winner wins!"),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+              Navigator.pop(context); // Go back to Home
+            },
+            child: const Text("Back to Home"),
+          ),
+          TextButton(
+            onPressed: () {
+              // Reset game (this closes dialog in its implementation, but we need to ensure flow)
+              // The viewModel.resetGame pops the context.
+              // Since we are in a dialog, resetGame's pop will close the dialog.
+              viewModel.resetGame(context);
+            },
+            child: const Text("Play Again"),
+          ),
+        ],
       ),
     );
   }
